@@ -8,8 +8,23 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
  
-from flask import Flask, request
- 
+from flask import Flask, render_template, request, session, redirect, url_for, Response, send_file
+
+
+@main.route('/',methods=['GET', 'POST'])
+def index():
+    if 'user_rate' not in session:
+        my_ratings = createMyRatings()
+        session['user_rate'] = my_ratings
+    if request.method == 'POST':
+        print 'The form is received. '
+        movieName =  request.form.get('movieName')
+        res = searchMovie(request.form.get('movieName'))
+        #print 'returned'
+        #print res
+        return render_template('result.html', moviename = movieName, search_res = res)
+    return render_template('search.html') 
+
 @main.route("/<int:user_id>/ratings/top/<int:count>", methods=["GET"])
 def top_ratings(user_id, count):
     logger.debug("User %s TOP ratings requested", user_id)
