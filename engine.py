@@ -1,5 +1,7 @@
 import os
 from pyspark.mllib.recommendation import ALS
+from pyspark.sql import SparkSession
+from pyspark.sql import Row
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -84,6 +86,15 @@ class RecommendationEngine:
 
         return ratings
 
+    def queryMovie(self, movie_name):
+        self.schemaMovies.createOrReplaceTempView("movies")
+        df = self.spark.sql("SELECT * FROM movies WHERE movie_name LIKE '%" + movie_name + "%' AND movie_name!='title'")
+        df.show()
+        tdf = df.collect()
+        print tdf
+        pass
+
+
     def __init__(self, sc, dataset_path):
         """Init the recommendation engine given a Spark context and a dataset path
         """
@@ -91,6 +102,10 @@ class RecommendationEngine:
         logger.info("Starting up the Recommendation Engine: ")
 
         self.sc = sc
+        self.spark = SparkSession \
+        .builder \
+        .appName("Python Spark SQL data") \
+        .getOrCreate()
 
         # Load ratings data for later use
         logger.info("Loading Ratings data...")
@@ -106,10 +121,14 @@ class RecommendationEngine:
         movies_raw_data_header = movies_raw_RDD.take(1)[0]
         self.movies_RDD = movies_raw_RDD.filter(lambda line: line!=movies_raw_data_header)\
             .map(lambda line: line.split(",")).map(lambda tokens: (int(tokens[0]),tokens[1],tokens[2])).cache()
+        movies_temp_RDD = self.movies_RDD.map(lambda p: Row(movie_id=p[0], movie_name=p[1], movie_gentrs=p[2]))
+        logger.info("Generate views...")
+        self.schemaMovies = self.spark.createDataFrame(movies_temp_RDD)
+        
+
         self.movies_titles_RDD = self.movies_RDD.map(lambda x: (int(x[0]),x[1])).cache()
         # Pre-calculate movies ratings counts
         self.__count_and_average_ratings()
-
         # Train the model
         self.rank = 8
         self.seed = 5L

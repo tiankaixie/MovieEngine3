@@ -13,16 +13,15 @@ from flask import Flask, render_template, request, session, redirect, url_for, R
 
 @main.route('/',methods=['GET', 'POST'])
 def index():
-    if 'user_rate' not in session:
-        my_ratings = createMyRatings()
-        session['user_rate'] = my_ratings
     if request.method == 'POST':
         print 'The form is received. '
         movieName =  request.form.get('movieName')
-        res = searchMovie(request.form.get('movieName'))
-        #print 'returned'
+        print movieName
+        recommendation_engine.queryMovie(movieName)
+        #res = searchMovie(request.form.get('movieName'))
+        #print 'returned' zip(res_idx, movieList[res_idx],rateList)
         #print res
-        return render_template('result.html', moviename = movieName, search_res = res)
+        #return render_template('result.html', moviename = movieName, search_res = res)
     return render_template('search.html') 
 
 @main.route("/<int:user_id>/ratings/top/<int:count>", methods=["GET"])
@@ -56,6 +55,6 @@ def create_app(spark_context, dataset_path):
 
     recommendation_engine = RecommendationEngine(spark_context, dataset_path)    
     
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='/static')
     app.register_blueprint(main)
     return app 
