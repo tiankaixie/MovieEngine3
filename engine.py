@@ -88,12 +88,12 @@ class RecommendationEngine:
 
     def queryMovie(self, movie_name):
         self.schemaMovies.createOrReplaceTempView("movies")
-        df = self.spark.sql("SELECT * FROM movies WHERE movie_name LIKE '%" + movie_name + "%' AND movie_name!='title'")
+        df = self.spark.sql("SELECT * FROM movies WHERE LOWER(movie_name) RLIKE LOWER('" + movie_name + "') AND movie_name!='title'")
         df.show()
-        tdf = df.collect()
-        print tdf
-        pass
-
+        ids = df.select('movie_id').rdd.flatMap(lambda x: x).collect()
+        titles = df.select('movie_name').rdd.flatMap(lambda x: x).collect()
+        genres = df.select('movie_genres').rdd.flatMap(lambda x: x).collect()
+        return zip(ids, titles,genres)
 
     def __init__(self, sc, dataset_path):
         """Init the recommendation engine given a Spark context and a dataset path
@@ -121,7 +121,7 @@ class RecommendationEngine:
         movies_raw_data_header = movies_raw_RDD.take(1)[0]
         self.movies_RDD = movies_raw_RDD.filter(lambda line: line!=movies_raw_data_header)\
             .map(lambda line: line.split(",")).map(lambda tokens: (int(tokens[0]),tokens[1],tokens[2])).cache()
-        movies_temp_RDD = self.movies_RDD.map(lambda p: Row(movie_id=p[0], movie_name=p[1], movie_gentrs=p[2]))
+        movies_temp_RDD = self.movies_RDD.map(lambda p: Row(movie_id=p[0], movie_name=p[1], movie_genres=p[2]))
         logger.info("Generate views...")
         self.schemaMovies = self.spark.createDataFrame(movies_temp_RDD)
         

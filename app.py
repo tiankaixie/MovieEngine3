@@ -17,11 +17,12 @@ def index():
         print 'The form is received. '
         movieName =  request.form.get('movieName')
         print movieName
-        recommendation_engine.queryMovie(movieName)
+        res = recommendation_engine.queryMovie(movieName)
         #res = searchMovie(request.form.get('movieName'))
         #print 'returned' zip(res_idx, movieList[res_idx],rateList)
-        #print res
-        #return render_template('result.html', moviename = movieName, search_res = res)
+        print 'return results'
+        # print res
+        return render_template('result.html', moviename = movieName, search_res = res)
     return render_template('search.html') 
 
 @main.route("/<int:user_id>/ratings/top/<int:count>", methods=["GET"])
