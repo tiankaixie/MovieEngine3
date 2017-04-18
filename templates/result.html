@@ -68,14 +68,14 @@
               <tr>
                 <th>#</th>
                 <th>Name</th>
-                <th>Rating</th>
+                <th>Genres</th>
               </tr>
             </thead>
             <tbody>
             {% for res_id, item, rating in search_res %}
               <tr>
                 <td>{{loop.index}}</td>
-                <td><a href="info/{{res_id }}"> {{ item }} </a></td>
+                <td><a href="/info/{{res_id }}"> {{ item }} </a></td>
                 <td>{{rating}}</td>
               </tr>
             {% endfor %}
@@ -87,7 +87,7 @@
       <hr>
 
       <footer>
-        <p>&copy; 2016 Company, Inc.</p>
+        <p>&copy; 2017 by Tiankai Xie</p>
       </footer>
     </div> <!-- /container -->
 

@@ -14,16 +14,17 @@ from flask import Flask, render_template, request, session, redirect, url_for, R
 @main.route('/',methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        print 'The form is received. '
         movieName =  request.form.get('movieName')
-        print movieName
         res = recommendation_engine.queryMovie(movieName)
-        #res = searchMovie(request.form.get('movieName'))
-        #print 'returned' zip(res_idx, movieList[res_idx],rateList)
-        print 'return results'
-        # print res
         return render_template('result.html', moviename = movieName, search_res = res)
     return render_template('search.html') 
+
+@main.route('/info/<int:movie_id>')
+def movieInfo(movie_id):
+    rating = recommendation_engine.get_average_rating_for_movie_id(movie_id)
+    print rating[0][1]
+    #return json.dumps(rating)
+    return render_template('details.html',score = round(rating[0][1][1],2),num = rating[0][1][0], movie_id = movie_id)
 
 @main.route("/<int:user_id>/ratings/top/<int:count>", methods=["GET"])
 def top_ratings(user_id, count):
@@ -36,7 +37,20 @@ def movie_ratings(user_id, movie_id):
     logger.debug("User %s rating requested for movie %s", user_id, movie_id)
     ratings = recommendation_engine.get_ratings_for_movie_ids(user_id, [movie_id])
     return json.dumps(ratings)
- 
+    #return render_template('details.html',score = rating, movie_id = movie_id)
+
+@main.route("/<int:user_id>/rating/<int:movie_id>", methods = ["POST"])
+def add_rating(user_id,movie_id):
+    rating = [(user_id, (int)(movie_id), (int)(request.form.get('score')))]
+    print "*****************************************************"
+    print rating
+    recommendation_engine.add_ratings(rating)
+    return redirect("/0/rated")
+
+@main.route("/<int:user_id>/rated")
+def rated(user_id):
+    rated_movies = recommendation_engine.get_rated_movies(user_id)
+    return json.dumps(rated_movies)
  
 @main.route("/<int:user_id>/ratings", methods = ["POST"])
 def add_ratings(user_id):

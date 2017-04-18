@@ -26,9 +26,9 @@ class RecommendationEngine:
         """
         logger.info("Counting movie ratings...")
         movie_ID_with_ratings_RDD = self.ratings_RDD.map(lambda x: (x[1], x[2])).groupByKey()
-        movie_ID_with_avg_ratings_RDD = movie_ID_with_ratings_RDD.map(get_counts_and_averages)
-        self.movies_rating_counts_RDD = movie_ID_with_avg_ratings_RDD.map(lambda x: (x[0], x[1][0]))
-
+        self.movie_ID_with_avg_ratings_RDD = movie_ID_with_ratings_RDD.map(get_counts_and_averages)
+        self.movies_rating_counts_RDD = self.movie_ID_with_avg_ratings_RDD.map(lambda x: (x[0], x[1][0]))
+        # print movie_ID_with_avg_ratings_RDD.collect()
 
     def __train_model(self):
         """Train the ALS model with the current dataset
@@ -66,6 +66,9 @@ class RecommendationEngine:
         
         return ratings
 
+    def get_average_rating_for_movie_id(self, movie_id):
+        return self.movie_ID_with_avg_ratings_RDD.filter(lambda movie: movie[0] == movie_id).collect()
+
     def get_ratings_for_movie_ids(self, user_id, movie_ids):
         """Given a user_id and a list of movie_ids, predict ratings for them 
         """
@@ -85,6 +88,12 @@ class RecommendationEngine:
         ratings = self.__predict_ratings(user_unrated_movies_RDD).filter(lambda r: r[2]>=25).takeOrdered(movies_count, key=lambda x: -x[1])
 
         return ratings
+
+    def get_rated_movies(self, user_id):
+        rated_movies = self.ratings_RDD.filter(lambda rating: rating[0] == user_id).map(lambda x: (x[1],x[2])).join(self.movies_titles_RDD).collect()
+        print "#################################################"
+        print rated_movies
+        return rated_movies
 
     def queryMovie(self, movie_name):
         self.schemaMovies.createOrReplaceTempView("movies")

@@ -57,9 +57,9 @@
 
       <!-- Main jumbotron for a primary marketing message or call to action -->
         <div class="container">
-          <h2>The current rating is : {{score}}</h2>
+          <h3>The current rating is : {{score}}, {{num}} people rated this movie.</h3>
           <p>please rate/change the score:</p>
-          <form method="post" action="rateMovie/{{movie_id}}">
+          <form method="post" action="/0/rating/{{movie_id}}">
             <!--<input type="text" name="score" placeholder="Please enter 1-5 number:" required autofocus>-->
             <select name="score">
               <option value="5">5</option>
