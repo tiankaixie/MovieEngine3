@@ -22,7 +22,6 @@ def index():
 @main.route('/info/<int:movie_id>')
 def movieInfo(movie_id):
     rating = recommendation_engine.get_average_rating_for_movie_id(movie_id)
-    print rating[0][1]
     #return json.dumps(rating)
     return render_template('details.html',score = round(rating[0][1][1],2),num = rating[0][1][0], movie_id = movie_id)
 
@@ -30,7 +29,8 @@ def movieInfo(movie_id):
 def top_ratings(user_id, count):
     logger.debug("User %s TOP ratings requested", user_id)
     top_ratings = recommendation_engine.get_top_ratings(user_id,count)
-    return json.dumps(top_ratings)
+    return render_template('recommendation.html', movies = top_ratings)
+    #return json.dumps(top_ratings)
  
 @main.route("/<int:user_id>/ratings/<int:movie_id>", methods=["GET"])
 def movie_ratings(user_id, movie_id):
@@ -42,15 +42,14 @@ def movie_ratings(user_id, movie_id):
 @main.route("/<int:user_id>/rating/<int:movie_id>", methods = ["POST"])
 def add_rating(user_id,movie_id):
     rating = [(user_id, (int)(movie_id), (int)(request.form.get('score')))]
-    print "*****************************************************"
-    print rating
     recommendation_engine.add_ratings(rating)
     return redirect("/0/rated")
 
 @main.route("/<int:user_id>/rated")
 def rated(user_id):
     rated_movies = recommendation_engine.get_rated_movies(user_id)
-    return json.dumps(rated_movies)
+    return render_template('rated.html', rated = rated_movies)
+    #return json.dumps(rated_movies)
  
 @main.route("/<int:user_id>/ratings", methods = ["POST"])
 def add_ratings(user_id):
@@ -61,10 +60,10 @@ def add_ratings(user_id):
     ratings = map(lambda x: (user_id, int(x[0]), float(x[1])), ratings_list)
     # add them to the model using then engine API
     recommendation_engine.add_ratings(ratings)
- 
+    
     return json.dumps(ratings)
  
- 
+
 def create_app(spark_context, dataset_path):
     global recommendation_engine 
 
