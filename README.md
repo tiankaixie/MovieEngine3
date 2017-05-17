@@ -12,7 +12,13 @@ It is the second part of the tutorial the one that explains how to use Python/Fl
 
 ## Part II: [Building and running the web service](notebooks/online-recommendations.ipynb)  
 
-## Quick start  
+## New Features
+
+- Searching movie record based on Spark SQL.
+- Web interface of the system so that user is able to search and rate movies
+and get recommended movies on web pages.
+
+## Quick start
 
 The file `server/server.py` starts a [CherryPy](http://www.cherrypy.org/) server running a 
 [Flask](http://flask.pocoo.org/) `app.py` to start a RESTful
